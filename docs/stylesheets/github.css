@@ -1,0 +1,71 @@
+/* GitHub-like styling for MkDocs Material */
+
+:root {
+  /* GitHub colors */
+  --gh-blue: #0969da;
+  --gh-green: #1a7f37;
+  --gh-red: #cf222e;
+  --gh-orange: #bf8700;
+  --gh-purple: #8250df;
+  --gh-gray: #57606a;
+  --gh-border: #d0d7de;
+}
+
+/* Light mode adjustments */
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color: #24292f;
+  --md-primary-bg-color: #ffffff;
+  --md-accent-fg-color: var(--gh-blue);
+}
+
+/* Dark mode adjustments */
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #c9d1d9;
+  --md-primary-bg-color: #0d1117;
+  --md-accent-fg-color: #58a6ff;
+}
+
+/* GitHub-style code blocks */
+.highlight code {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 0.85em;
+}
+
+/* GitHub-style tables */
+.md-typeset table:not([class]) {
+  border: 1px solid var(--gh-border);
+  border-collapse: collapse;
+}
+
+.md-typeset table:not([class]) th {
+  background-color: #f6f8fa;
+  font-weight: 600;
+}
+
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) th {
+  background-color: #161b22;
+}
+
+.md-typeset table:not([class]) td,
+.md-typeset table:not([class]) th {
+  border: 1px solid var(--gh-border);
+  padding: 6px 13px;
+}
+
+/* GitHub-style admonitions */
+.md-typeset .admonition.note {
+  border-color: var(--gh-blue);
+}
+
+.md-typeset .admonition.warning {
+  border-color: var(--gh-orange);
+}
+
+.md-typeset .admonition.danger {
+  border-color: var(--gh-red);
+}
+
+/* Clean header styling */
+.md-header {
+  box-shadow: 0 1px 0 var(--gh-border);
+}

@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat:*)",
+      "Bash(dir /s /b \"C:\\Users\\scarlett\\Documents\\workbench-reverse-engineering\\data\")",
+      "Bash(dir /s /b \"C:\\Users\\scarlett\\Documents\\workbench-reverse-engineering\")",
+      "Bash(dir:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

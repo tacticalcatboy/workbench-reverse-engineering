@@ -1,0 +1,89 @@
+site_name: Enforce Script Diagnostics
+site_description: Reverse-engineered diagnostic patterns from Arma Reforger Workbench
+site_author: scarlett
+
+theme:
+  name: material
+  palette:
+    # GitHub-like light theme
+    - scheme: default
+      primary: white
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # GitHub-like dark theme
+    - scheme: slate
+      primary: black
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+  icon:
+    repo: fontawesome/brands/github
+
+# Repository info (optional - remove if not using GitHub)
+# repo_url: https://github.com/yourusername/workbench-reverse-engineering
+# repo_name: workbench-reverse-engineering
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Setup Guide: getting-started/setup.md
+    - Checklist: getting-started/checklist.md
+  - Findings:
+    - Diagnostics: findings/diagnostics.md
+    - Runtime Errors: findings/runtime-errors.md
+    - Keywords: findings/keywords.md
+    - Types: findings/types.md
+    - API Surface: findings/api.md
+    - Class Hierarchy: findings/class-hierarchy.md
+    - Script Modules: findings/modules.md
+  - Reference:
+    - Grammar: reference/grammar.md
+    - Attributes: reference/attributes.md
+    - AST Nodes: reference/ast-nodes.md
+    - Compiler: reference/compiler.md
+    - Preprocessor: reference/preprocessor.md
+    - Validation: reference/validation.md
+    - Official API Docs: reference/official-api.md
+    - NET API: reference/net-api.md
+  - Prompts:
+    - AI Linter: prompts/ai-linter.md
+    - Revision Tasks:
+      - Overview: prompts/revision/index.md
+      - 01 - Parse API Docs: prompts/revision/01-parse-api-docs.md
+      - 02 - Create CLI Tool: prompts/revision/02-create-cli-tool.md
+      - 03 - Enhance AI Linter: prompts/revision/03-enhance-ai-linter.md
+      - 04 - AI Workflow: prompts/revision/04-ai-workflow.md
+      - 05 - Enforce Validator: prompts/revision/05-enforce-validator.md
+  - Strategy: strategy.md
+  - Legal: legal.md
+  - Session Log: session-log.md
+
+markdown_extensions:
+  - tables
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+
+extra_css:
+  - stylesheets/github.css

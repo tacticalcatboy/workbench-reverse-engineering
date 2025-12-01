@@ -1,0 +1,93 @@
+# =============================================================================
+# Enforce Script Tools - .gitignore
+# =============================================================================
+# This project contains tools for analyzing Enforce Script. Game content
+# must be excluded to comply with copyright law.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Extracted/Derived Game Content (MUST be excluded)
+# -----------------------------------------------------------------------------
+# Users should generate these locally using the provided scripts
+
+# Extracted binary strings
+data/workbench/
+data/game/
+
+# Parsed API documentation (derived from Bohemia's Doxygen docs)
+data/api/
+
+# Any other extracted data
+data/**/*.txt
+data/**/*.json
+
+# Keep the data directory structure
+!data/.gitkeep
+
+# -----------------------------------------------------------------------------
+# Third-Party Tools (too large, users install separately)
+# -----------------------------------------------------------------------------
+tools/
+
+# -----------------------------------------------------------------------------
+# Build Artifacts
+# -----------------------------------------------------------------------------
+# MkDocs generated site
+site/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+venv/
+.venv/
+ENV/
+
+# -----------------------------------------------------------------------------
+# IDE and Editor
+# -----------------------------------------------------------------------------
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# -----------------------------------------------------------------------------
+# OS Generated
+# -----------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+nul
+
+# -----------------------------------------------------------------------------
+# Logs and Temp Files
+# -----------------------------------------------------------------------------
+*.log
+*.tmp
+*.temp
+.cache/

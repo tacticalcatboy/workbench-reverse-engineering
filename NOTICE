@@ -1,0 +1,47 @@
+NOTICE - Enforce Script Tools
+==============================
+
+This project provides tools and documentation for working with Enforce Script,
+the scripting language used in Bohemia Interactive's Enfusion engine (Arma
+Reforger and future titles).
+
+WHAT THIS PROJECT CONTAINS
+--------------------------
+- Analysis tools and scripts (original work, MIT licensed)
+- Documentation about Enforce Script syntax and patterns
+- Parser scripts for generating local data from your game installation
+
+WHAT THIS PROJECT DOES NOT CONTAIN
+----------------------------------
+- Game binaries or executables
+- Extracted strings from game files
+- Parsed API documentation data
+- Any copyrighted content from Bohemia Interactive
+
+COPYRIGHT NOTICE
+----------------
+- Arma Reforger, Enfusion, and Enforce Script are trademarks of Bohemia
+  Interactive a.s.
+- All game content, including the Workbench tools and API documentation,
+  remains the property of Bohemia Interactive a.s.
+- This project is created for interoperability and modding education purposes
+  under fair use principles.
+
+USAGE
+-----
+To use the analysis tools, you must:
+1. Own a legal copy of Arma Reforger
+2. Have Arma Reforger Tools installed via Steam
+3. Run the extraction/parsing scripts yourself to generate local data
+
+This approach ensures compliance with copyright law while allowing the
+community to benefit from shared tooling.
+
+DISCLAIMER
+----------
+This project is not affiliated with, endorsed by, or connected to Bohemia
+Interactive a.s. in any way. Use at your own risk.
+
+For questions about modding Arma Reforger, please refer to:
+- Official Arma Reforger Wiki: https://community.bistudio.com/wiki/Arma_Reforger
+- Bohemia Interactive Forums: https://forums.bohemia.net/
