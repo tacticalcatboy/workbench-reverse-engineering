@@ -17,23 +17,38 @@ This project provides:
 
 ## Quick Start
 
-### 1. Install Dependencies
+### 1. Clone and Install Dependencies
 
 ```bash
+git clone https://github.com/YOUR_USERNAME/enforce-script-tools.git
+cd enforce-script-tools
+
 # Python packages for parsing
 pip install beautifulsoup4 lxml
 
-# MkDocs for viewing documentation
+# MkDocs for viewing documentation (optional)
 pip install mkdocs mkdocs-material
 ```
 
 ### 2. Generate API Data
 
-The API data must be generated locally from your game installation:
+The API data must be generated locally from your game installation. The script will **auto-detect** your Steam installation and **auto-extract** the documentation zip files.
 
 ```bash
-# Parse the official Doxygen API documentation
-python scripts/parse_api_docs.py
+# Recommended: auto-detect, extract zips, and parse
+python scripts/parse_api_docs.py --extract
+```
+
+**After game updates**, run with `--extract` again to get the latest API:
+```bash
+python scripts/parse_api_docs.py --extract
+```
+
+**If auto-detection fails** (non-standard Steam location), specify paths manually:
+```bash
+python scripts/parse_api_docs.py \
+  --enfusion "D:\Games\Steam\steamapps\common\Arma Reforger Tools\Workbench\docs\EnfusionScriptAPIPublic\EnfusionScriptAPIPublic" \
+  --arma "D:\Games\Steam\steamapps\common\Arma Reforger Tools\Workbench\docs\ArmaReforgerScriptAPIPublic\ArmaReforgerScriptAPIPublic"
 ```
 
 This creates:
@@ -77,8 +92,18 @@ From reverse engineering the Workbench compiler:
 
 | Script | Purpose |
 |--------|---------|
-| `parse_api_docs.py` | Parse Doxygen HTML to JSON |
+| `parse_api_docs.py` | Parse Doxygen HTML to JSON (auto-detects Steam, auto-extracts zips) |
 | `extract_strings.py` | Extract strings from binaries |
+
+### parse_api_docs.py Options
+
+```
+--extract        Extract zip files if newer than existing docs (recommended)
+--force-extract  Force re-extraction even if up to date
+--enfusion PATH  Manual path to EnfusionScriptAPIPublic docs
+--arma PATH      Manual path to ArmaReforgerScriptAPIPublic docs
+--output DIR     Output directory (default: data/api)
+```
 
 ## Legal
 

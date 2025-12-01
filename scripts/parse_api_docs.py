@@ -8,11 +8,170 @@ Doxygen HTML files and outputs structured JSON files.
 
 import argparse
 import json
+import os
 import re
+import shutil
 import sys
+import zipfile
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple
 from bs4 import BeautifulSoup, Tag
+
+
+# Relative paths from Arma Reforger Tools install
+DOCS_FOLDER = r"Workbench\docs"
+ENFUSION_ZIP = "EnfusionScriptAPIPublic.zip"
+ARMA_ZIP = "ArmaReforgerScriptAPIPublic.zip"
+ENFUSION_DOCS_SUBPATH = r"Workbench\docs\EnfusionScriptAPIPublic\EnfusionScriptAPIPublic"
+ARMA_DOCS_SUBPATH = r"Workbench\docs\ArmaReforgerScriptAPIPublic\ArmaReforgerScriptAPIPublic"
+
+
+def find_arma_tools_install() -> Optional[Path]:
+    """
+    Auto-detect Arma Reforger Tools installation path.
+
+    Checks common Steam library locations on Windows.
+    Returns the path to 'Arma Reforger Tools' folder, or None if not found.
+    """
+    # Common Steam library locations
+    common_paths = [
+        # Default Steam install
+        r"C:\Program Files (x86)\Steam\steamapps\common\Arma Reforger Tools",
+        r"C:\Program Files\Steam\steamapps\common\Arma Reforger Tools",
+        # Common secondary library drives
+        r"D:\Steam\steamapps\common\Arma Reforger Tools",
+        r"D:\SteamLibrary\steamapps\common\Arma Reforger Tools",
+        r"E:\Steam\steamapps\common\Arma Reforger Tools",
+        r"E:\SteamLibrary\steamapps\common\Arma Reforger Tools",
+        r"F:\Steam\steamapps\common\Arma Reforger Tools",
+        r"F:\SteamLibrary\steamapps\common\Arma Reforger Tools",
+        r"G:\Steam\steamapps\common\Arma Reforger Tools",
+        r"G:\SteamLibrary\steamapps\common\Arma Reforger Tools",
+    ]
+
+    # Try each common path
+    for path_str in common_paths:
+        path = Path(path_str)
+        if path.exists() and (path / "Workbench").exists():
+            return path
+
+    # Try to find via Steam's libraryfolders.vdf
+    steam_paths = [
+        Path(r"C:\Program Files (x86)\Steam"),
+        Path(r"C:\Program Files\Steam"),
+    ]
+
+    for steam_path in steam_paths:
+        vdf_path = steam_path / "steamapps" / "libraryfolders.vdf"
+        if vdf_path.exists():
+            try:
+                content = vdf_path.read_text(encoding='utf-8')
+                # Simple regex to find library paths in VDF
+                # Format: "path"		"D:\\SteamLibrary"
+                import re
+                matches = re.findall(r'"path"\s+"([^"]+)"', content)
+                for match in matches:
+                    lib_path = Path(match) / "steamapps" / "common" / "Arma Reforger Tools"
+                    if lib_path.exists() and (lib_path / "Workbench").exists():
+                        return lib_path
+            except Exception:
+                pass
+
+    return None
+
+
+def needs_extraction(zip_path: Path, extract_dir: Path) -> bool:
+    """Check if zip file needs to be extracted (newer than extracted folder)."""
+    if not zip_path.exists():
+        return False
+    if not extract_dir.exists():
+        return True
+
+    # Check if zip is newer than extracted directory
+    zip_mtime = zip_path.stat().st_mtime
+    extract_mtime = extract_dir.stat().st_mtime
+    return zip_mtime > extract_mtime
+
+
+def extract_api_docs(tools_path: Path, force: bool = False) -> bool:
+    """
+    Extract API documentation zip files if needed.
+
+    Args:
+        tools_path: Path to Arma Reforger Tools installation
+        force: Force re-extraction even if already up to date
+
+    Returns:
+        True if any extraction was performed
+    """
+    docs_path = tools_path / DOCS_FOLDER
+    extracted_any = False
+
+    for zip_name, folder_name in [
+        (ENFUSION_ZIP, "EnfusionScriptAPIPublic"),
+        (ARMA_ZIP, "ArmaReforgerScriptAPIPublic"),
+    ]:
+        zip_path = docs_path / zip_name
+        extract_dir = docs_path / folder_name
+
+        if not zip_path.exists():
+            print(f"Warning: {zip_name} not found at {zip_path}")
+            continue
+
+        if force or needs_extraction(zip_path, extract_dir):
+            print(f"Extracting {zip_name}...")
+
+            # Remove old extracted folder if it exists
+            if extract_dir.exists():
+                shutil.rmtree(extract_dir)
+
+            # Extract zip
+            with zipfile.ZipFile(zip_path, 'r') as zf:
+                zf.extractall(docs_path)
+
+            print(f"  Extracted to {extract_dir}")
+            extracted_any = True
+        else:
+            print(f"{folder_name} is up to date")
+
+    return extracted_any
+
+
+def get_api_paths(args) -> Tuple[Optional[Path], Optional[Path]]:
+    """
+    Get paths to API documentation, using auto-detection if not specified.
+
+    Returns (enfusion_path, arma_path) tuple.
+    """
+    enfusion_path = None
+    arma_path = None
+
+    # If user specified paths, use those
+    if args.enfusion:
+        enfusion_path = Path(args.enfusion)
+    if args.arma:
+        arma_path = Path(args.arma)
+
+    # If not all paths specified, try auto-detection
+    if not enfusion_path or not arma_path:
+        tools_path = find_arma_tools_install()
+
+        if tools_path:
+            print(f"Found Arma Reforger Tools at: {tools_path}")
+            if not enfusion_path:
+                enfusion_path = tools_path / ENFUSION_DOCS_SUBPATH
+            if not arma_path:
+                arma_path = tools_path / ARMA_DOCS_SUBPATH
+        else:
+            print("Could not auto-detect Arma Reforger Tools installation.")
+            print("\nPlease specify paths manually:")
+            print("  python scripts/parse_api_docs.py --enfusion <path> --arma <path>")
+            print("\nExample (adjust to your Steam library location):")
+            print('  python scripts/parse_api_docs.py \\')
+            print('    --enfusion "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Arma Reforger Tools\\Workbench\\docs\\EnfusionScriptAPIPublic\\EnfusionScriptAPIPublic" \\')
+            print('    --arma "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Arma Reforger Tools\\Workbench\\docs\\ArmaReforgerScriptAPIPublic\\ArmaReforgerScriptAPIPublic"')
+
+    return enfusion_path, arma_path
 
 
 def parse_type_from_html(td: Tag) -> str:
@@ -356,16 +515,55 @@ def generate_summary(classes: list) -> dict:
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Parse Doxygen API docs to JSON')
-    parser.add_argument('--enfusion', type=str,
-                       default=r'D:\SteamLibrary\steamapps\common\Arma Reforger Tools\Workbench\docs\EnfusionScriptAPIPublic\EnfusionScriptAPIPublic',
-                       help='Path to EnfusionScriptAPIPublic docs')
-    parser.add_argument('--arma', type=str,
-                       default=r'D:\SteamLibrary\steamapps\common\Arma Reforger Tools\Workbench\docs\ArmaReforgerScriptAPIPublic\ArmaReforgerScriptAPIPublic',
-                       help='Path to ArmaReforgerScriptAPIPublic docs')
+    parser = argparse.ArgumentParser(
+        description='Parse Doxygen API docs to JSON',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Auto-detect and auto-extract (recommended after game updates)
+  python scripts/parse_api_docs.py --extract
+
+  # Force re-extraction even if up to date
+  python scripts/parse_api_docs.py --force-extract
+
+  # Just parse (assumes docs already extracted)
+  python scripts/parse_api_docs.py
+
+  # Specify paths manually (skips auto-detection)
+  python scripts/parse_api_docs.py \\
+    --enfusion "C:\\path\\to\\EnfusionScriptAPIPublic" \\
+    --arma "C:\\path\\to\\ArmaReforgerScriptAPIPublic"
+"""
+    )
+    parser.add_argument('--enfusion', type=str, default=None,
+                       help='Path to EnfusionScriptAPIPublic docs (auto-detected if not specified)')
+    parser.add_argument('--arma', type=str, default=None,
+                       help='Path to ArmaReforgerScriptAPIPublic docs (auto-detected if not specified)')
     parser.add_argument('--output', type=str, default='data/api',
-                       help='Output directory for JSON files')
+                       help='Output directory for JSON files (default: data/api)')
+    parser.add_argument('--extract', action='store_true',
+                       help='Extract zip files if newer than existing docs')
+    parser.add_argument('--force-extract', action='store_true',
+                       help='Force re-extraction of zip files')
     args = parser.parse_args()
+
+    # Handle extraction if requested
+    tools_path = None
+    if args.extract or args.force_extract:
+        tools_path = find_arma_tools_install()
+        if tools_path:
+            print(f"\n=== Checking API Documentation ===")
+            extract_api_docs(tools_path, force=args.force_extract)
+        else:
+            print("Warning: Cannot extract - Arma Reforger Tools not found")
+            print("Please extract the zip files manually or specify paths with --enfusion/--arma")
+
+    # Get paths (auto-detect if not specified)
+    enfusion_path, arma_path = get_api_paths(args)
+
+    if not enfusion_path and not arma_path:
+        print("\nError: No API documentation paths available.")
+        sys.exit(1)
 
     output_dir = Path(args.output)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -373,8 +571,7 @@ def main():
     all_classes = []
 
     # Parse Enfusion API
-    enfusion_path = Path(args.enfusion)
-    if enfusion_path.exists():
+    if enfusion_path and enfusion_path.exists():
         print(f"\n=== Parsing Enfusion Script API ===")
         enfusion_classes = parse_api_docs(enfusion_path)
         print(f"Parsed {len(enfusion_classes)} classes from Enfusion API")
@@ -385,12 +582,11 @@ def main():
         print(f"Saved to {output_dir / 'enfusion.json'}")
 
         all_classes.extend(enfusion_classes)
-    else:
+    elif enfusion_path:
         print(f"Warning: Enfusion docs not found at {enfusion_path}")
 
     # Parse Arma Reforger API
-    arma_path = Path(args.arma)
-    if arma_path.exists():
+    if arma_path and arma_path.exists():
         print(f"\n=== Parsing Arma Reforger Script API ===")
         arma_classes = parse_api_docs(arma_path)
         print(f"Parsed {len(arma_classes)} classes from Arma Reforger API")
@@ -401,7 +597,7 @@ def main():
         print(f"Saved to {output_dir / 'arma-reforger.json'}")
 
         all_classes.extend(arma_classes)
-    else:
+    elif arma_path:
         print(f"Warning: Arma Reforger docs not found at {arma_path}")
 
     # Generate summary
