@@ -13,6 +13,7 @@
 # Extracted binary strings
 data/workbench/
 data/game/
+data/dll/
 
 # Parsed API documentation (derived from Bohemia's Doxygen docs)
 data/api/

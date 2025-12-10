@@ -2,6 +2,13 @@
 
 Complete grammar and syntax documentation for Enforce Script, derived from parser error messages, AST node types, and compiler infrastructure analysis.
 
+> **Machine-Readable Rules:** This documentation has been converted to JSON for automated validation.
+> See [`data/validation/`](../../data/validation/README.md) for:
+> - `tokens.json` - Lexical rules (keywords, operators, literals)
+> - `grammar-rules.json` - Syntax rules (declarations, statements, expressions)
+> - `type-rules.json` - Type system rules (primitives, references, conversions)
+> - `error-patterns.json` - Diagnostic patterns (error codes, messages)
+
 ## Lexical Structure
 
 ### Identifiers

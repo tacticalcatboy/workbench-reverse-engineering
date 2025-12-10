@@ -40,6 +40,8 @@ nav:
   - Getting Started:
     - Setup Guide: getting-started/setup.md
     - Checklist: getting-started/checklist.md
+  - Tools:
+    - AI Linter: tools/linter.md
   - Findings:
     - Diagnostics: findings/diagnostics.md
     - Runtime Errors: findings/runtime-errors.md
@@ -58,7 +60,17 @@ nav:
     - Official API Docs: reference/official-api.md
     - NET API: reference/net-api.md
   - Prompts:
-    - AI Linter: prompts/ai-linter.md
+    - AI Linter:
+      - Overview: prompts/linter/index.md
+      - Main Prompt: prompts/linter/ai-linter.md
+      - CLAUDE.md Snippet: prompts/linter/claude-md-snippet.md
+      - Reference:
+        - API Reference: prompts/linter/api-reference.md
+        - Inheritance Reference: prompts/linter/inheritance-ref.md
+      - Specialized:
+        - Component Linter: prompts/linter/linter-components.md
+        - RPC Linter: prompts/linter/linter-rpc.md
+        - UI Linter: prompts/linter/linter-ui.md
     - Revision Tasks:
       - Overview: prompts/revision/index.md
       - 01 - Parse API Docs: prompts/revision/01-parse-api-docs.md

@@ -11,12 +11,17 @@ Decision guide for AI-assisted Enforce Script development tooling.
 ```
 Write Code → External Validator → Fix Errors → Repeat
                     ↓
-              ┌───────────┐
-              │ Our Tool  │  ← No Workbench needed!
-              │ - Syntax  │
-              │ - Types   │
-              │ - API     │
-              └───────────┘
+         ┌─────────────────────────────────────┐
+         │            TWO OPTIONS              │
+         ├──────────────┬──────────────────────┤
+         │ AI Linter    │  CLI Validator       │
+         │ (Prompt)     │  (Program)           │
+         ├──────────────┼──────────────────────┤
+         │ • Claude     │  • Python/Node       │
+         │ • Flexible   │  • Deterministic     │
+         │ • Explains   │  • CI/CD ready       │
+         │ • Quick win  │  • Fast on large     │
+         └──────────────┴──────────────────────┘
 
 Only for final upload → Workbench → BI Servers
 ```
@@ -62,15 +67,43 @@ Only for final upload → Workbench → BI Servers
 - [x] Document attribute parameter rules
 - [x] Map preprocessor directive support (#ifdef/#ifndef - no #define/#include)
 - [x] Map class relationships (inheritance, composition, dependencies)
-- [ ] Create syntax validation rules
+- [x] Create syntax validation rules (JSON for linter) - see `data/validation/`
 
-### Phase 3: CLI Validator Tool
+### Phase 3a: AI Linter Prompt ✅ COMPLETE
 
-- [ ] Create Python/Node CLI tool
-- [ ] Implement syntax checking (parse .c files)
-- [ ] Implement API validation (check method calls against JSON)
-- [ ] Implement type checking (parameter type validation)
-- [ ] Generate error reports matching Workbench format
+- [x] Generate `data/validation/*.json` from grammar.md
+- [x] Create linter system prompt referencing JSON rules (updated `docs/prompts/linter/`)
+- [x] Create CLAUDE.md snippet for project integration (`docs/prompts/linter/claude-md-snippet.md`)
+- [x] Test against real Enforce Script code (Overthrow) - Found 6 errors, 2 warnings
+- [x] Document usage in `docs/tools/linter.md`
+
+**What it is:** A Claude prompt that uses JSON validation rules to review code.
+**Advantage:** Works immediately, explains errors, suggests fixes.
+
+### Phase 3b: CLI Validator Tool ✅ CORE COMPLETE
+
+- [x] Create Python CLI tool (`tools/enforce-lint/`)
+- [x] Implement lexer/tokenizer (`src/lexer.py`)
+- [x] Implement AST node classes (`src/ast_nodes.py`)
+- [x] Implement recursive descent parser (`src/parser.py`)
+- [x] Implement AST-based semantic analyzer (`validators/ast_validator.py`)
+- [x] Generate error reports matching Workbench format
+- [ ] Implement full API validation (check method calls against JSON)
+- [ ] Implement comprehensive type checking (parameter type validation)
+
+**What it is:** A standalone program that parses and validates code.
+**Advantage:** Deterministic, fast, CI/CD integration, no AI needed.
+
+**Components Built:**
+- Full lexer with support for all Enforce Script tokens
+- Complete AST node hierarchy for all language constructs
+- Recursive descent parser implementing the full grammar
+- Semantic analyzer detecting:
+  - Misplaced break/continue statements
+  - Return type violations
+  - Static context violations (this/super in static)
+  - Missing return statements
+  - Override keyword warnings
 
 ### Phase 4: Editor Integration
 
@@ -89,16 +122,39 @@ Only for final upload → Workbench → BI Servers
 
 ## Technical Architecture
 
-### CLI Validator Design
+### AI Linter Design (Phase 3a)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    AI LINTER PROMPT                     │
+├─────────────────────────────────────────────────────────┤
+│ System Prompt:                                          │
+│   "You are an Enforce Script linter..."                 │
+│                                                         │
+│ Knowledge Base (JSON files):                            │
+│   ├── data/validation/tokens.json                       │
+│   ├── data/validation/grammar-rules.json                │
+│   ├── data/validation/type-rules.json                   │
+│   ├── data/validation/error-patterns.json               │
+│   └── data/api/*.json (class/method signatures)         │
+│                                                         │
+│ Input: User pastes code or references file              │
+│ Output: Errors, warnings, hints with explanations       │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Usage:** Add linter prompt to CLAUDE.md or use as standalone prompt.
+
+### CLI Validator Design (Phase 3b)
 
 ```
 enforce-lint <file.c>
   │
   ├── Lexer/Tokenizer
-  │     └── Tokenize Enforce Script syntax
+  │     └── Tokenize using data/validation/tokens.json
   │
   ├── Parser
-  │     └── Build AST from tokens
+  │     └── Build AST using data/validation/grammar-rules.json
   │
   ├── API Validator
   │     ├── Load data/api/*.json
@@ -107,24 +163,42 @@ enforce-lint <file.c>
   │     └── Check parameter types
   │
   ├── Type Checker
+  │     ├── Load data/validation/type-rules.json
   │     ├── Infer variable types
   │     ├── Check assignments
   │     └── Validate returns
   │
   └── Reporter
+        ├── Load data/validation/error-patterns.json
         └── Output errors in Workbench-compatible format
 ```
 
+**Usage:** `enforce-lint src/**/*.c` or integrate into CI/CD pipeline.
+
 ## Strategic Advantages
+
+### AI Linter vs CLI Validator
+
+| Aspect | AI Linter (Prompt) | CLI Validator (Program) |
+|--------|-------------------|------------------------|
+| **Speed to implement** | Fast (just a prompt) | Slow (full parser) |
+| **Accuracy** | Good (AI reasoning) | Exact (deterministic) |
+| **Explanations** | Rich (explains why) | Basic (error codes) |
+| **CI/CD** | No | Yes |
+| **Large codebases** | Slow/expensive | Fast |
+| **Offline** | No (needs API) | Yes |
+| **Fix suggestions** | Yes (AI generates) | No (just reports) |
+
+**Recommendation:** Start with AI Linter for quick wins, build CLI Validator for automation.
 
 ### Why External Validation?
 
 | Problem with Workbench | Our Solution |
 |------------------------|--------------|
-| Must open heavy GUI | Lightweight CLI tool |
-| Can't integrate with CI/CD | Run in any pipeline |
+| Must open heavy GUI | Lightweight CLI tool or AI prompt |
+| Can't integrate with CI/CD | CLI validator in any pipeline |
 | AI can't see Workbench errors | JSON error output for AI |
-| No VS Code integration | Full LSP support |
+| No VS Code integration | Full LSP support (Phase 4) |
 | Slow iteration cycle | Instant validation |
 
 ### What Workbench Still Does
@@ -159,21 +233,33 @@ We're not replacing these - just the code validation workflow.
 
 ## Available Prompts
 
-| Prompt | Purpose |
-|--------|---------|
-| `prompts/grammar-analysis.md` | Study syntax rules |
-| `prompts/attribute-rules.md` | Document attribute validation |
-| `prompts/preprocessor-directives.md` | Map #ifdef support |
-| `prompts/dll-analysis.md` | Explore DLL APIs |
-| `prompts/class-relationships.md` | Map inheritance |
+| Prompt | Purpose | Phase |
+|--------|---------|-------|
+| `prompts/grammar-analysis.md` | Study syntax rules | 2 |
+| `prompts/attribute-rules.md` | Document attribute validation | 2 |
+| `prompts/preprocessor-directives.md` | Map #ifdef support | 2 |
+| `prompts/dll-analysis.md` | Explore DLL APIs | 1 |
+| `prompts/class-relationships.md` | Map inheritance | 2 |
+| `prompts/syntax-validation-rules.md` | Convert grammar to JSON for linter | 2 |
+| `prompts/enforce-linter.md` | AI linter system prompt (TBD) | 3a |
 
 ## Success Metrics
 
-- [ ] Can validate a .c file without opening Workbench
-- [ ] Catches 90%+ of errors Workbench would catch
+### Phase 3a (AI Linter)
+- [x] AI linter prompt catches common errors (missing override, null checks, type mismatches)
+- [x] Can review a .c file without opening Workbench
+- [x] AI explains errors and suggests fixes
+- [ ] Integrated into Overthrow CLAUDE.md for testing
+
+### Phase 3b (CLI Validator)
+- [x] CLI tool parses valid Enforce Script without errors
+- [ ] Catches 90%+ of errors Workbench would catch (partial - semantic errors working)
+- [ ] CI/CD pipeline integration working (ready - JSON output supported)
+- [x] Output matches Workbench error format
+
+### Phase 4+ (Editor/AI)
 - [ ] VS Code shows real-time errors
-- [ ] AI can read validation output and fix code
-- [ ] CI/CD pipeline integration working
+- [ ] AI can read validation output and fix code automatically
 
 ## Legal Framework
 

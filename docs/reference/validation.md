@@ -2,6 +2,9 @@
 
 Components that validate Enforce Script code.
 
+> **Machine-Readable Validation Rules:** For linter/validator JSON schemas, see [`data/validation/`](../../data/validation/README.md).
+> This page documents the internal Workbench validation components.
+
 ## Core Components
 
 | Component | Namespace | Purpose |
